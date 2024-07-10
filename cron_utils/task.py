@@ -1,3 +1,8 @@
+
+
+
+
+
 import csv
 import os
 from cron_utils.bankcloud import BankCloudPaymentService
@@ -109,9 +114,7 @@ class TaskPerformed:
                     }
             report_excel_sheet(params, None)
     
-     def send_daily_mobile_report_sftp(self):
-        """ these are daily mobile reports which goes to 70.7 server daily"""
-        send_daily_mobile_report_sftp(None)
+     
         
         
         

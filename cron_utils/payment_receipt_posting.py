@@ -11,7 +11,7 @@ from shared_config.exception_constants import STATUS_TYPE,NONRETRYABLE_CODE
 from shared_config.exceptions import GenericException
 from shared_config import constants as api_constants
 from shared_config import external_config as settings
-
+from external_services.adapters import APIManager
 from cron_utils import constants as policy_constants
 from cron_utils import constants as payments_constants
 from cron_utils import external_constants
@@ -134,7 +134,7 @@ class PaymentReceiptPostingService:
         if txn_status.lower() == "success":
             error_code = '0300'
 
-        url = settings.TEBT_PAYMENT_RECEPT_POSTING_URL
+        # url = settings.TEBT_PAYMENT_RECEPT_POSTING_URL
 
         payment_mode = payments_constants.TEBT_POSTING_PAYMENT_MODE_MAPPING[self.txn_details.get("paymode_details").get("mode")]
         card_number = 'NA'
@@ -182,12 +182,15 @@ class PaymentReceiptPostingService:
         try:
             custom_log('info', request=None, params={'myurl': url, 'data': payload,
                                                      'detail': 'In get_payment_receipt_details: Hitting payment receipt posting API'})
-            response = requests.post(url=url, data=payload, timeout=external_constants.CUSTOMER_PORTAL_API_TIME_OUT)
+            # response = requests.post(url=url, data=payload, timeout=external_constants.CUSTOMER_PORTAL_API_TIME_OUT)
+            service_type = "TEBT_PAYMENT_RECEPT_POSTING_URL"
+            adapter = APIManager(service_type, payload)
+            response = adapter.get_data()
             if not response.status_code == external_constants.CUSTOMER_PORTAL_API_SUCCESS_CODE:
                 raise GenericException(STATUS_TYPE["PAYMENT"], exception_code=NONRETRYABLE_CODE["GENERIC_FAILURE"],
                                        detail=response.text, response_msg=api_constants.GENERIC_ERROR_MESSAGE,
                                        request=None)
-            custom_log('info', request=None, params={'myurl': url, 'response': response.text,
+            custom_log('info', request=None, params={'myurl':service_type , 'response': response.text,
                                                      'detail': 'Received response from posting API'})
 
             json_resp = json.loads(json.dumps(xmltodict.parse(response.text)))

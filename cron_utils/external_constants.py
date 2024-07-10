@@ -30,12 +30,3 @@ REPORTS_FOR_DAILY_LEAD_REPORT = ['kruthibm1805@gmail.com', 'nithin.test1234@gmai
 
 
 
-#=================================Bankcloud Payment Integration===================================
-BANKCLOUD_GENERATE_ORDER_URL = "https://cvh05ghrzc.execute-api.ap-south-1.amazonaws.com/uat/pg/createorders"
-BANKCLOUD_USER_TOKEN = "77443eb9-eec7-4ca6-a4ac-3c3ff4fded9d"
-BANKCLOUD_USER_SECRET = "04fd0e09-f8a0-4bf2-bf13-33dd63b2a16d"
-BANKCLOUD_FETCH_URL = "https://cvh05ghrzc.execute-api.ap-south-1.amazonaws.com/uat/fetch"
-ULIP_ROUTE_ID = 265
-CONVENTIONAL_ROUTE_ID = 264
-
-

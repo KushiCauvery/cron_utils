@@ -1,9 +1,10 @@
+
 import base64
 import hashlib
 import hmac
 import math
 import uuid
-
+from external_services.adapters import APIManager
 from cron_utils import external_constants as settings
 from cron_utils.payment_receipt_posting import PaymentReceiptPostingService
 from django.db import transaction
@@ -20,12 +21,6 @@ import json
 
 
 class BankCloudPaymentService:
-    REQUEST_URL = settings.BANKCLOUD_GENERATE_ORDER_URL
-    REQUEST_TIMEOUT = 10
-    USER_TOKEN = settings.BANKCLOUD_USER_TOKEN
-    USER_SECRET = settings.BANKCLOUD_USER_SECRET
-    route_id_ulip = settings.ULIP_ROUTE_ID
-    route_id_conventional = settings.CONVENTIONAL_ROUTE_ID
     
     def __init__(self, request=None, policy_no=None, payment_data=None, txn_id=None):
         self.request = request
@@ -94,10 +89,11 @@ class BankCloudPaymentService:
         """
         to_date = datetime.now()
         from_date = to_date - timedelta(hours=hours, minutes=minutes)
-        pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") &
-                                                      Q(Q(status="Processing") | (Q(status="Success") &
-                                                                                  Q(tebt_receipt_status='false'))) & 
-                                                       Q(created_at__lte=to_date, created_at__gte=from_date))
+        pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") & (Q(status="Processing") | (Q(status="Success") & Q(tebt_receipt_status=False))) )[:10]
+        # pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") &
+        #                                               Q(Q(status="Processing") | (Q(status="Success") &
+        #                                                                           Q(tebt_receipt_status='false'))) & 
+        #                                                Q(created_at__lte=to_date, created_at__gte=from_date))
 
         return pending_txn_list
 
@@ -106,14 +102,18 @@ class BankCloudPaymentService:
             try:
                 payload = {'urn': txn.hdfc_reference_no}
                 payload_str = json.dumps(payload, separators=(',', ':'))
-                url = settings.BANKCLOUD_FETCH_URL
+                # url = settings.BANKCLOUD_FETCH_URL
 
-                headers = {
-                    'Authorization': self.generate_hash(payload_str, url),
-                    'Content-Type': 'application/json'
-                }
+                # headers = {
+                #     'Authorization': self.generate_hash(payload_str, url),
+                #     'Content-Type': 'application/json'
+                # }
 
-                response = requests.post(url, data=payload_str.encode('utf-8'), headers=headers, timeout=self.REQUEST_TIMEOUT)
+                # response = requests.post(url, data=payload_str.encode('utf-8'), headers=headers, timeout=self.REQUEST_TIMEOUT)
+                # print(response.text)
+                service_type = "BANKCLOUD_FETCH_URL"
+                adapter = APIManager(service_type, payload)
+                response = adapter.get_data()
                 if response.status_code != 200:
                     custom_log('error', request=self.request, params={'detail': 'Bankcloud fetch API response failed',
                                                                       'response': response.text, 'urn': txn.hdfc_reference_no})
