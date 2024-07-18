@@ -57,14 +57,13 @@ class BankCloudPaymentService:
         if not urn:
             raise GenericException(status_type=STATUS_TYPE["PAYMENT"], exception_code=NONRETRYABLE_CODE["BAD_REQUEST"],
                                    detail="urn not present", request=self.request)
-        # kwargs = dict(status=txn_status, txn_data=request.data)
         if data.get("urn"):
             kwargs = {'status': data.get("status")}
             try:
                 Transaction.objects.filter(hdfc_reference_no=urn).update(**kwargs)
             except Exception as e:
                 raise GenericException(status_type=STATUS_TYPE["PAYMENT"], exception_code=NONRETRYABLE_CODE["BAD_REQUEST"],
-                                       detail="Error while updating transaction details for {}".format(urn),
+                                       detail="Error while updating transaction details for {}".format(urn) + repr(e),
                                        request=self.request)
 
         else:
@@ -73,10 +72,9 @@ class BankCloudPaymentService:
                 Transaction.objects.filter(hdfc_reference_no=urn).update(**kwargs)
             except Exception as e:
                 raise GenericException(status_type=STATUS_TYPE["PAYMENT"], exception_code=NONRETRYABLE_CODE["BAD_REQUEST"],
-                                       detail="Error while updating transaction details for {}".format(urn),
+                                       detail="Error while updating transaction details for {}".format(urn)+ repr(e),
                                        request=self.request)
 
-            # calling payment receipt posting API
             txn_obj = Transaction.objects.filter(hdfc_reference_no=urn).last()
             if txn_obj.status == 'Success':
                 PaymentReceiptPostingService(txn_obj, txn_details).update_payment_receipt_details_in_db()
@@ -89,11 +87,10 @@ class BankCloudPaymentService:
         """
         to_date = datetime.now()
         from_date = to_date - timedelta(hours=hours, minutes=minutes)
-        pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") & (Q(status="Processing") | (Q(status="Success") & Q(tebt_receipt_status=False))) )[:10]
-        # pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") &
-        #                                               Q(Q(status="Processing") | (Q(status="Success") &
-        #                                                                           Q(tebt_receipt_status='false'))) & 
-        #                                                Q(created_at__lte=to_date, created_at__gte=from_date))
+        pending_txn_list = Transaction.objects.filter(Q(payment_gateway_type="bankcloud") &
+                                                      Q(Q(status="Processing") | (Q(status="Success") &
+                                                                                  Q(tebt_receipt_status='false'))) &
+                                                      Q(created_at__lte=to_date, created_at__gte=from_date))
 
         return pending_txn_list
 
@@ -101,16 +98,6 @@ class BankCloudPaymentService:
         for txn in pending_txn_list:
             try:
                 payload = {'urn': txn.hdfc_reference_no}
-                payload_str = json.dumps(payload, separators=(',', ':'))
-                # url = settings.BANKCLOUD_FETCH_URL
-
-                # headers = {
-                #     'Authorization': self.generate_hash(payload_str, url),
-                #     'Content-Type': 'application/json'
-                # }
-
-                # response = requests.post(url, data=payload_str.encode('utf-8'), headers=headers, timeout=self.REQUEST_TIMEOUT)
-                # print(response.text)
                 service_type = "BANKCLOUD_FETCH_URL"
                 adapter = APIManager(service_type, payload)
                 response = adapter.get_data()
@@ -134,12 +121,12 @@ class BankCloudPaymentService:
                                                                          'response': response.text, 'urn': txn.hdfc_reference_no})
                         self.transaction_update_db(response.json())
             except AttributeError as e:
-                custom_log('error', request=self.request, params={'detail': 'Bankcloud fetch API response error',
+                custom_log('error', request=self.request, params={'detail': 'Bankcloud fetch API response error ' + repr(e),
                                                                   'urn': txn.hdfc_reference_no,
                                                                   'response': response.text})
                 continue
             except Exception as e:
-                custom_log('error', request=self.request, params={'detail': 'Bankcloud fetch API response error',
+                custom_log('error', request=self.request, params={'detail': 'Bankcloud fetch API response error ' + repr(e),
                                                                   'urn': txn.hdfc_reference_no})
                 continue
     

@@ -1,13 +1,15 @@
 import os
 
-
+ABODE_DOCUMENT_PASSWORD = os.getenv("ABODE_DOCUMENT_PASSWORD")
+ABODE_DOCUMENT_IP = os.getenv("ABODE_DOCUMENT_IP")
 ABODE_DOCUMENT_SERVER_DETAILS = {
-    'address': '10.10.38.7',
+    'address': ABODE_DOCUMENT_IP,
     'port': 8019,
     'username': 'om_adobe_uat',
-    'password': 'Sec@#$!@1278',
+    'password': ABODE_DOCUMENT_PASSWORD,
     'directory': '/adobe/'
 }
+
 
 REPORTS_FOR_APP_LINKED_USER = {'to': 'kruthibm1805@gmail.com',
                                'cc': ['nithin.test1234@gmail.com']}

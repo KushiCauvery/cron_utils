@@ -236,13 +236,15 @@ def send_registration_data_to_adobe(params={}, request=None):
     
     
 
-def get_user_registration_data_as_csv(params={}, request=None):
+def get_user_registration_data_as_csv(params=None, request=None):
     """
     This function is used to generate registration data report.
     Function will generate the csv report based on the params
     params can have
     {'from_date':'2018-07-01 00:00:00', 'to_date':'2018-08-01 00:00:00'} to generate_report from given date range
     """
+    if params is None:
+      params={}
     custom_log('info', request=request, params={'body': {"params": params},
                                                 'detail': 'adobe_cron_for_registration_data start'})
     if not params:

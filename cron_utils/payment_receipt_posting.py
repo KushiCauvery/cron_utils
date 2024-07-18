@@ -134,7 +134,6 @@ class PaymentReceiptPostingService:
         if txn_status.lower() == "success":
             error_code = '0300'
 
-        # url = settings.TEBT_PAYMENT_RECEPT_POSTING_URL
 
         payment_mode = payments_constants.TEBT_POSTING_PAYMENT_MODE_MAPPING[self.txn_details.get("paymode_details").get("mode")]
         card_number = 'NA'
@@ -182,11 +181,10 @@ class PaymentReceiptPostingService:
         try:
             custom_log('info', request=None, params={'myurl': url, 'data': payload,
                                                      'detail': 'In get_payment_receipt_details: Hitting payment receipt posting API'})
-            # response = requests.post(url=url, data=payload, timeout=external_constants.CUSTOMER_PORTAL_API_TIME_OUT)
             service_type = "TEBT_PAYMENT_RECEPT_POSTING_URL"
             adapter = APIManager(service_type, payload)
             response = adapter.get_data()
-            if not response.status_code == external_constants.CUSTOMER_PORTAL_API_SUCCESS_CODE:
+            if response.status_code != external_constants.CUSTOMER_PORTAL_API_SUCCESS_CODE:
                 raise GenericException(STATUS_TYPE["PAYMENT"], exception_code=NONRETRYABLE_CODE["GENERIC_FAILURE"],
                                        detail=response.text, response_msg=api_constants.GENERIC_ERROR_MESSAGE,
                                        request=None)

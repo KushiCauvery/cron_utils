@@ -104,7 +104,6 @@ class Transaction(ModelBase):
     is_reconciled = models.BooleanField(default=False)
     app_os = models.CharField(max_length=255, default="", null=True)
     cms_receipt_no = models.CharField(max_length=255, default="", null=True)
-    # history = HistoricalRecords()
     reconciliation_count = models.PositiveIntegerField(blank=True, null=True, default=1)
     source = models.CharField(max_length=100, default="")
     
@@ -191,7 +190,7 @@ class MyAccountUsers(ModelBase):
     account_expires_at = models.DateTimeField(default=datetime.strptime("31/12/9999 23:59:59", "%d/%m/%Y %H:%M:%S"))
     is_activated_at = models.DateTimeField(default=datetime.strptime("31/12/9999 23:59:59", "%d/%m/%Y %H:%M:%S"))
     is_deactivated_at = models.DateTimeField(default=datetime.strptime("31/12/9999 23:59:59", "%d/%m/%Y %H:%M:%S"))
-    deactivation_source = models.CharField('DeactivationSource', max_length=30, choices=DEACTIVATION_SOURCE, default='')
+    deactivation_source_value = models.CharField('DeactivationSource', max_length=30, choices=DEACTIVATION_SOURCE, default='')
 
     objects = account_manager.MyAccountUsersManager()
 

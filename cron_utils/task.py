@@ -80,7 +80,6 @@ class TaskPerformed:
             """
             sends email for become an advisor page
             """
-            table_obj = CustomerServiceForm
             qs = CustomerServiceForm.objects.filter(form_type='Become An Advisor')
             file_name = BECOME_AN_ADVISOR_REPORT_FILENAME + str(datetime.now().date()) + '.csv'
             file_path = settings.MEDIA_ROOT + file_name
